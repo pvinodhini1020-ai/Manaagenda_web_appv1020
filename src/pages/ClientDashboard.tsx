@@ -1,13 +1,68 @@
-import { FolderKanban, ClipboardList, MessageSquare } from "lucide-react";
+import { useState, useEffect } from "react";
+import { FolderKanban, ClipboardList, MessageSquare, Loader2 } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import StatusBadge from "@/components/StatusBadge";
-
-const projects = [
-  { id: 1, name: "E-Commerce Platform", status: "active" as const, employees: ["Ravi Sharma", "Ananya Verma"], progress: 65 },
-  { id: 2, name: "Analytics Dashboard", status: "completed" as const, employees: ["Kiran Patel"], progress: 100 },
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { userService } from "@/services/userService";
+import { projectService, Project } from "@/services/projectService";
+import { serviceRequestService, ServiceRequest } from "@/services/serviceRequestService";
+import { messageService, Message } from "@/services/messageService";
+import { toast } from "sonner";
 
 export default function ClientDashboard() {
+  const { user } = useAuth();
+  const [stats, setStats] = useState<any>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+      
+      try {
+        const [dashboardStats, requestsRes, messagesRes] = await Promise.all([
+          userService.getDashboardStats(),
+          serviceRequestService.getClientServiceRequests(user.id),
+          messageService.getMessages()
+        ]);
+        
+        setStats(dashboardStats);
+        // Filter projects to show only in_progress, pending, and active status
+        const filteredProjects = (dashboardStats.projects || []).filter(
+          (project: Project) => ['in_progress', 'pending', 'active'].includes(project.status)
+        );
+        setProjects(filteredProjects);
+        setRequests(requestsRes || []);
+        setMessages(messagesRes.data || []);
+      } catch (error: any) {
+        console.error("Error fetching data:", error);
+        toast.error(error.message || "Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Failed to load dashboard data</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -16,33 +71,62 @@ export default function ClientDashboard() {
       </div>
 
       <div className="grid gap-5 sm:grid-cols-3">
-        <StatCard title="My Projects" value={2} icon={FolderKanban} gradient="gradient-primary" />
-        <StatCard title="Service Requests" value={1} icon={ClipboardList} gradient="gradient-info" />
-        <StatCard title="Messages" value={4} icon={MessageSquare} gradient="gradient-purple" />
+        <StatCard 
+          title="My Projects" 
+          value={stats.total_projects || 0} 
+          icon={FolderKanban} 
+          gradient="gradient-primary" 
+        />
+        <StatCard 
+          title="Service Requests" 
+          value={requests.length} 
+          icon={ClipboardList} 
+          gradient="gradient-info" 
+        />
+        <StatCard 
+          title="Messages" 
+          value={messages.length} 
+          icon={MessageSquare} 
+          gradient="gradient-purple" 
+        />
       </div>
 
       <div>
-        <h2 className="font-bold text-foreground text-lg mb-4">Projects</h2>
-        <div className="space-y-4">
-          {projects.map((project) => (
-            <div key={project.id} className="bg-card rounded-2xl border border-border p-6 shadow-card hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="font-bold text-foreground">{project.name}</h3>
-                <StatusBadge status={project.status} />
+        <h2 className="font-bold text-foreground text-lg mb-4">My Projects</h2>
+        {projects.length === 0 ? (
+          <div className="bg-card rounded-2xl border border-border p-8 text-center">
+            <p className="text-muted-foreground">No projects assigned yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {projects.map((project) => (
+              <div key={project.id} className="bg-card rounded-2xl border border-border p-6 shadow-card hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-300">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-bold text-foreground">{project.name}</h3>
+                  <StatusBadge status={project.status} />
+                </div>
+                {project.employees && project.employees.length > 0 && (
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Team: {project.employees.map(emp => emp.name).join(", ")}
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground mb-2">
+                  Created: {new Date(project.created_at).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {project.description}
+                </p>
+                <div className="w-full bg-muted rounded-full h-2.5 mt-3 overflow-hidden">
+                  <div
+                    className="gradient-primary h-2.5 rounded-full transition-all duration-500"
+                    style={{ width: `${project.progress || 0}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 font-medium">{project.progress || 0}% complete</p>
               </div>
-              <p className="text-sm text-muted-foreground mb-2">
-                Team: {project.employees.join(", ")}
-              </p>
-              <div className="w-full bg-muted rounded-full h-2.5 mt-3 overflow-hidden">
-                <div
-                  className="gradient-primary h-2.5 rounded-full transition-all duration-500"
-                  style={{ width: `${project.progress}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 font-medium">{project.progress}% complete</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

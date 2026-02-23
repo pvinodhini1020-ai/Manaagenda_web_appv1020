@@ -1,19 +1,41 @@
-import { Search } from "lucide-react";
-import { useState } from "react";
+import { Search, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import StatusBadge from "@/components/StatusBadge";
-
-const users = [
-  { id: 1, name: "Vinodhini Kumar", email: "admin@vss.com", role: "Admin", status: "active" as const },
-  { id: 2, name: "Ravi Sharma", email: "ravi@vss.com", role: "Employee", status: "active" as const },
-  { id: 3, name: "Priya Nair", email: "priya@techcorp.in", role: "Client", status: "active" as const },
-  { id: 4, name: "Ananya Verma", email: "ananya@vss.com", role: "Employee", status: "active" as const },
-  { id: 5, name: "Meera Joshi", email: "meera@vss.com", role: "Employee", status: "inactive" as const },
-];
+import { userService, User } from "@/services/userService";
+import { toast } from "sonner";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await userService.getUsers();
+        setUsers(response.data || []);
+      } catch (error: any) {
+        console.error("Error fetching users:", error);
+        toast.error(error.message || "Failed to load users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const filtered = users.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()));
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2 text-muted-foreground">Loading users...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -39,14 +61,24 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((u) => (
-                <tr key={u.id} className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors">
-                  <td className="px-6 py-4 text-sm font-semibold text-foreground">{u.name}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{u.email}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{u.role}</td>
-                  <td className="px-6 py-4"><StatusBadge status={u.status} /></td>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
+                    {search ? "No users found matching your search." : "No users available."}
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((u) => (
+                  <tr key={u.user_id} className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors">
+                    <td className="px-6 py-4 text-sm font-semibold text-foreground">{u.name}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">{u.email}</td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground capitalize">{u.role}</td>
+                    <td className="px-6 py-4">
+                      <StatusBadge status={(u.status || 'active') as "active" | "pending" | "completed" | "inactive" | "approved" | "rejected" | "in_progress"} />
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

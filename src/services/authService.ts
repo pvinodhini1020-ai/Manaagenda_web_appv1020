@@ -58,6 +58,10 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_data');
       window.location.href = '/login';
+    } else if (error.response?.status === 403) {
+      // Access denied - user doesn't have permission
+      const errorMessage = error.response?.data?.message || 'Access denied';
+      throw new Error(errorMessage);
     }
     return Promise.reject(error);
   }

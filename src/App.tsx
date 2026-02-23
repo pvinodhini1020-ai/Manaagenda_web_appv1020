@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
 import Dashboard from "@/pages/Dashboard";
@@ -21,36 +22,79 @@ import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  return <DashboardLayout>{children}</DashboardLayout>;
-}
-
 function AuthRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   if (isAuthenticated) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<Navigate to="/login" replace />} />
-    <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
-    <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
-    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-    <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
-    <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
-    <Route path="/services" element={<ProtectedRoute><Services /></ProtectedRoute>} />
-    <Route path="/service-requests" element={<ProtectedRoute><ServiceRequests /></ProtectedRoute>} />
-    <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-    <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
-    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-    <Route path="/request-service" element={<ProtectedRoute><RequestService /></ProtectedRoute>} />
-    <Route path="/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
-    <Route path="*" element={<NotFound />} />
-  </Routes>
-);
+function RoleBasedRoutes() {
+  const { user } = useAuth();
+
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+      <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
+      
+      {/* Admin Routes */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <DashboardLayout><Dashboard /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/Employees" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><Employees /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/clients" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><Clients /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/service-requests" element={
+        <ProtectedRoute allowedRoles={['admin', 'employee']}>
+          <DashboardLayout><ServiceRequests /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/projects" element={
+        <ProtectedRoute allowedRoles={['admin', 'employee', 'client']}>
+          <DashboardLayout><Projects /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/messages" element={
+        <ProtectedRoute allowedRoles={['admin', 'employee', 'client']}>
+          <DashboardLayout><Messages /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/request-service" element={
+        <ProtectedRoute allowedRoles={['client']}>
+          <DashboardLayout><RequestService /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <DashboardLayout><Profile /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      
+      {/* Additional Admin Routes */}
+      <Route path="/services" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><Services /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/users" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout><UsersPage /></DashboardLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -59,7 +103,7 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
-          <AppRoutes />
+          <RoleBasedRoutes />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

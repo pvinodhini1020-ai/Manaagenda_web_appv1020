@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type Status = "active" | "pending" | "completed" | "inactive" | "approved" | "rejected";
+type Status = "active" | "pending" | "completed" | "inactive" | "approved" | "rejected" | "in_progress";
 
 const styles: Record<Status, string> = {
   active: "gradient-success text-white",
@@ -9,6 +9,7 @@ const styles: Record<Status, string> = {
   inactive: "bg-muted text-muted-foreground",
   approved: "gradient-success text-white",
   rejected: "gradient-danger text-white",
+  in_progress: "gradient-info text-white",
 };
 
 export default function StatusBadge({ status }: { status: Status }) {
