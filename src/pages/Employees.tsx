@@ -13,7 +13,7 @@ import { apiClient } from "@/services/authService";
 import Loader from "@/components/Loader";
 
 interface Employee {
-  user_id: string;
+  id: string;
   name: string;
   email: string;
   phone?: string;
@@ -103,8 +103,8 @@ export default function Employees() {
 
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[\d\s\-\(\)]{10,}$/.test(formData.phone.replace(/\s/g, ""))) {
-      newErrors.phone = "Please enter a valid phone number";
+    } else if (!/^\+?[\d\s\-\(\)]{10}$/.test(formData.phone.replace(/\s/g, ""))) {
+      newErrors.phone = "Please enter a valid 10-digit phone number";
     }
 
     if (!formData.department.trim()) {
@@ -176,7 +176,7 @@ export default function Employees() {
       }
 
       if (editingEmployee) {
-        await apiClient.put(`/employees/${editingEmployee.user_id}`, payload);
+        await apiClient.put(`/employees/${editingEmployee.id}`, payload);
         toast.success("Employee updated successfully!", {
           description: `${formData.fullName} has been updated.`,
           icon: <CheckCircle className="h-4 w-4" />,
@@ -541,7 +541,7 @@ export default function Employees() {
                   </tr>
                 ) : (
                   filtered.map((emp) => (
-                    <tr key={emp.user_id} className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors duration-200">
+                    <tr key={emp.id} className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors duration-200">
                       <td className="px-6 py-4 text-sm font-semibold text-foreground">{emp.name}</td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">{emp.email}</td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">{emp.role}</td>
@@ -562,7 +562,7 @@ export default function Employees() {
                             variant="ghost"
                             size="icon"
                             className="text-destructive hover:bg-destructive/10 rounded-xl transition-all duration-200"
-                            onClick={() => handleDelete(emp.user_id, emp.name)}
+                            onClick={() => handleDelete(emp.id, emp.name)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

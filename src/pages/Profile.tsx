@@ -112,11 +112,12 @@ export default function Profile() {
   if (!user) return null;
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-        <p className="text-muted-foreground">Manage your account settings and personal information</p>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-screen py-8">
+      <div className="w-full max-w-4xl space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+          <p className="text-muted-foreground">Manage your account settings and personal information</p>
+        </div>
 
       <div className="bg-card rounded-2xl border border-border p-8 shadow-card space-y-6">
         <div className="flex items-center gap-4">
@@ -268,6 +269,7 @@ export default function Profile() {
             )}
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

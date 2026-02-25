@@ -6,7 +6,7 @@ export interface ServiceRequest {
   description: string;
   client_id: string;
   client?: {
-    id: string;
+    user_id: string;
     name: string;
     email: string;
     company?: string;

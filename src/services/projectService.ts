@@ -6,7 +6,7 @@ export interface Project {
   description: string;
   client_id: string;
   client?: {
-    id: string;
+    user_id: string;
     name: string;
     email: string;
     company?: string;
@@ -14,7 +14,7 @@ export interface Project {
   status: 'active' | 'pending' | 'completed' | 'rejected' | 'in_progress';
   employee_ids: string[];
   employees?: Array<{
-    id: string;
+    user_id: string;
     name: string;
     email: string;
     department?: string;

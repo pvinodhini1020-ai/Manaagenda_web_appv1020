@@ -111,7 +111,7 @@ export default function Login() {
         {/* Logo and branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl gradient-primary mb-4 shadow-glow animate-float">
-            <Sparkles className="h-8 w-8 text-white" />
+            <span className="text-white text-2xl font-bold">V</span>
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Vinodhini Software Solutions</h1>
           <p className="text-muted-foreground">Secure access to your workspace</p>

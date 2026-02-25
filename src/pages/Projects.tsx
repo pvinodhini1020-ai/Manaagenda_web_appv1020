@@ -268,7 +268,7 @@ export default function Projects() {
                         {clients && clients.length > 0 ? (
                           clients.map((client) => {
                             console.log('Client object:', client); // Debug log
-                            const clientId = client.id || client.user_id;
+                            const clientId = client.user_id;
                             console.log('Using client ID:', clientId); // Debug log
                             return (
                               <SelectItem key={clientId} value={clientId}>
@@ -316,12 +316,12 @@ export default function Projects() {
                         <p className="text-sm text-muted-foreground">No employees available</p>
                       ) : (
                         employees.map((employee) => (
-                          <div key={employee.id} className="flex items-center space-x-2">
+                          <div key={employee.user_id} className="flex items-center space-x-2">
                             <Checkbox
-                              id={employee.id || employee.user_id}
-                              checked={selectedEmployees.includes(employee.id || employee.user_id)}
+                              id={employee.user_id}
+                              checked={selectedEmployees.includes(employee.user_id)}
                               onCheckedChange={(checked) => {
-                                const empId = employee.id || employee.user_id;
+                                const empId = employee.user_id;
                                 console.log('Employee toggle:', { empId, checked, currentSelected: selectedEmployees });
                                 if (checked) {
                                   setSelectedEmployees([...selectedEmployees, empId]);
@@ -331,7 +331,7 @@ export default function Projects() {
                               }}
                             />
                             <label
-                              htmlFor={employee.id || employee.user_id}
+                              htmlFor={employee.user_id}
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                             >
                               {employee.name} - {employee.department}

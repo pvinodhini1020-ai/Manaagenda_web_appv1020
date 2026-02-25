@@ -75,7 +75,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Button>
           <Link to="/dashboard" className="flex items-center gap-2.5 group">
             <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center shadow-glow group-hover:scale-105 transition-transform">
-              <Sparkles className="h-5 w-5 text-white" />
+              <span className="text-white text-lg font-bold">V</span>
             </div>
             <span className="font-bold text-foreground hidden sm:block text-lg tracking-tight">
               Vinodhini Software Solutions

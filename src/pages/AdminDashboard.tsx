@@ -34,6 +34,12 @@ export default function AdminDashboard() {
         console.log('Show all:', showAll);
         console.log('Filtered projects:', newFilteredProjects);
         
+        // Debug: Log first project to check client data
+        if (newFilteredProjects.length > 0) {
+          console.log('First project data:', newFilteredProjects[0]);
+        }
+        debugger
+        
         setProjects(newFilteredProjects);
         setFilteredProjects(newFilteredProjects);
       } catch (error: any) {
@@ -135,7 +141,7 @@ export default function AdminDashboard() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-muted-foreground">
-                      {project.client?.company || project.client?.name}
+                      {project.client?.company || project.client?.name || 'Unknown Client'}
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -143,7 +149,7 @@ export default function AdminDashboard() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-muted-foreground">
-                      {new Date(project.created_at).toLocaleDateString()}
+                      {project.created_at ? new Date(project.created_at).toLocaleDateString() : 'Invalid Date'}
                     </div>
                   </td>
                 </tr>
