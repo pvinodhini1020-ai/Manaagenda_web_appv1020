@@ -4,8 +4,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Sparkles, Loader2, AlertCircle, CheckCircle2, Shield, Users, Briefcase } from "lucide-react";
+import { Eye, EyeOff, Sparkles, AlertCircle, CheckCircle2, Shield, Users, Briefcase } from "lucide-react";
 import { validateLoginForm, FormErrors, LoginFormData } from "@/utils/validation";
+import Loader from "@/components/Loader";
 
 export default function Login() {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -226,7 +227,7 @@ export default function Login() {
             >
               {isSubmitting || isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader size="sm" />
                   Signing in...
                 </>
               ) : (

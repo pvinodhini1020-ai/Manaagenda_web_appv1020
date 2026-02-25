@@ -48,8 +48,15 @@ export default function Profile() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) return;
+    if (!user) {
+      console.error('No user found in auth context');
+      toast.error("User not authenticated");
+      return;
+    }
 
+    console.log('Current user:', user); // Debug log
+    console.log('User ID:', user.id, (user as any).user_id); // Debug log
+    
     setLoading(true);
     try {
       const updateData: any = {};
@@ -78,7 +85,11 @@ export default function Profile() {
         return;
       }
 
-      await userService.updateUser(user.id, updateData);
+      const userId = user.id || (user as any).user_id;
+      console.log('Updating user with ID:', userId); // Debug log
+      console.log('Update data:', updateData); // Debug log
+
+      await userService.updateUser(userId, updateData);
       toast.success("Profile updated successfully!");
       
       // Update initial data to reflect saved changes
@@ -89,6 +100,7 @@ export default function Profile() {
         toast.info("Email updated. You may need to login again.");
       }
     } catch (error: any) {
+      console.error('Update error:', error);
       toast.error(error.message || "Failed to update profile");
     } finally {
       setLoading(false);

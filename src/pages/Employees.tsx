@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Search, Loader2, CheckCircle, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, CheckCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatusBadge from "@/components/StatusBadge";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { apiClient } from "@/services/authService";
+import Loader from "@/components/Loader";
 
 interface Employee {
   user_id: string;
@@ -52,7 +53,7 @@ export default function Employees() {
   const fetchEmployees = async () => {
     try {
       setFetchLoading(true);
-      const response = await apiClient.get('/users?role=employee');
+      const response = await apiClient.get('/employees');
       setEmployees(response.data.data || []);
     } catch (error: any) {
       console.error("Error fetching employees:", error);
@@ -175,7 +176,7 @@ export default function Employees() {
       }
 
       if (editingEmployee) {
-        await apiClient.patch(`/users/${editingEmployee.user_id}`, payload);
+        await apiClient.put(`/employees/${editingEmployee.user_id}`, payload);
         toast.success("Employee updated successfully!", {
           description: `${formData.fullName} has been updated.`,
           icon: <CheckCircle className="h-4 w-4" />,
@@ -240,6 +241,24 @@ export default function Employees() {
     setErrors({});
     setEditingEmployee(null);
     setDialogOpen(false);
+  };
+
+  const handleDelete = async (employeeId: string, employeeName: string) => {
+    if (!window.confirm(`Are you sure you want to delete ${employeeName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await apiClient.delete(`/employees/${employeeId}`);
+      if (response.status === 200) {
+        toast.success("Employee deleted successfully!");
+        // Refresh the employees list
+        fetchEmployees();
+      }
+    } catch (error: any) {
+      console.error("Error deleting employee:", error);
+      toast.error(error.response?.data?.message || "Failed to delete employee");
+    }
   };
 
   return (
@@ -465,7 +484,7 @@ export default function Employees() {
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader size="sm" />
                         {editingEmployee ? 'Updating...' : 'Adding Employee...'}
                       </>
                     ) : (
@@ -510,8 +529,7 @@ export default function Employees() {
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center">
                       <div className="flex items-center justify-center">
-                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                        Loading employees...
+                        <Loader size="md" text="Loading employees..." />
                       </div>
                     </td>
                   </tr>
@@ -544,6 +562,7 @@ export default function Employees() {
                             variant="ghost"
                             size="icon"
                             className="text-destructive hover:bg-destructive/10 rounded-xl transition-all duration-200"
+                            onClick={() => handleDelete(emp.user_id, emp.name)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

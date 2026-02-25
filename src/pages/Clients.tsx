@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Search, Loader2, CheckCircle, X, Building2, MapPin, Phone, Mail, User } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, CheckCircle, X, Building2, MapPin, Phone, Mail, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StatusBadge from "@/components/StatusBadge";
@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { apiClient } from "@/services/authService";
 import { useNavigate } from "react-router-dom";
+import Loader from "@/components/Loader";
 
 interface Client {
   user_id: string;
@@ -490,7 +491,7 @@ export default function Clients() {
                     >
                       {loading ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          <Loader size="sm" />
                           {editingClient ? 'Updating Client...' : 'Adding Client...'}
                         </>
                       ) : (
@@ -531,8 +532,7 @@ export default function Clients() {
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center">
                       <div className="flex items-center justify-center">
-                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                        Loading clients...
+                        <Loader size="md" text="Loading clients..." />
                       </div>
                     </td>
                   </tr>

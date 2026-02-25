@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Loader2, Users, Calendar, Building, Save } from "lucide-react";
+import { Plus, Users, Calendar, Building, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,12 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import StatusBadge from "@/components/StatusBadge";
+import Loader from "@/components/Loader";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
 } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { projectService, Project } from "@/services/projectService";
 import { userService, User } from "@/services/userService";
+import { apiClient } from "@/services/authService";
 import { toast } from "sonner";
 
 export default function Projects() {
@@ -49,12 +51,20 @@ export default function Projects() {
         setProjects(projectsData || []);
 
         if (isAdmin) {
-          const [employeesRes, clientsRes] = await Promise.all([
-            userService.getUsers({ role: 'employee' }),
-            userService.getUsers({ role: 'client' })
-          ]);
-          setEmployees(employeesRes.data || []);
-          setClients(clientsRes.data || []);
+          try {
+            const [employeesRes, clientsRes] = await Promise.all([
+              userService.getUsers({ role: 'employee' }),
+              userService.getUsers({ role: 'client' })
+            ]);
+            console.log('Employees response:', employeesRes);
+            console.log('Clients response:', clientsRes);
+            setEmployees(employeesRes.data || []);
+            setClients(clientsRes.data || []);
+          } catch (error) {
+            console.error('Error fetching employees/clients:', error);
+            setEmployees([]);
+            setClients([]);
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -68,6 +78,18 @@ export default function Projects() {
       fetchData();
     }
   }, [user, isAdmin]);
+
+  // Debug: Log clients state changes
+  useEffect(() => {
+    console.log('Clients state updated:', clients);
+    console.log('Form client_id:', formData.client_id);
+  }, [clients, formData.client_id]);
+
+  // Debug: Log employees and selectedEmployees state changes
+  useEffect(() => {
+    console.log('Employees state updated:', employees);
+    console.log('Selected employees:', selectedEmployees);
+  }, [employees, selectedEmployees]);
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +134,7 @@ export default function Projects() {
       name: "",
       description: "",
       client_id: "",
-      status: "pending"
+      status: "pending" as "active" | "pending" | "completed"
     });
     setSelectedEmployees([]);
   };
@@ -187,7 +209,7 @@ export default function Projects() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader size="md" text="Loading projects..." />
       </div>
     );
   }
@@ -224,36 +246,50 @@ export default function Projects() {
                   
                   <div className="space-y-2">
                     <Label htmlFor="client">Client *</Label>
-                    <Select value={formData.client_id} onValueChange={(value) => setFormData(prev => ({ ...prev, client_id: value }))}>
+                    <Select value={formData.client_id} onValueChange={(value) => {
+                      console.log('Client selected:', value); // Debug log
+                      setFormData(prev => ({ ...prev, client_id: value }));
+                    }}>
                       <SelectTrigger className="rounded-xl">
                         <SelectValue placeholder="Select client" />
                       </SelectTrigger>
                       <SelectContent>
-                        {clients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            <div className="flex items-center gap-2">
+                        {/* Test option to verify dropdown is working */}
+                        <SelectItem value="test">
+                          <div className="flex items-center gap-2">
+                            <Building className="h-4 w-4" />
+                            <div>
+                              <p className="font-medium">Test Client</p>
+                              <p className="text-xs text-muted-foreground">test@example.com</p>
+                            </div>
+                          </div>
+                        </SelectItem>
+                        
+                        {clients && clients.length > 0 ? (
+                          clients.map((client) => {
+                            console.log('Client object:', client); // Debug log
+                            const clientId = client.id || client.user_id;
+                            console.log('Using client ID:', clientId); // Debug log
+                            return (
+                              <SelectItem key={clientId} value={clientId}>
+                                <div className="flex items-center gap-2">
+                                  <Building className="h-4 w-4" />
+                                  <div>
+                                    <p className="font-medium">{client.company || client.name}</p>
+                                    <p className="text-xs text-muted-foreground">{client.email}</p>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            );
+                          })
+                        ) : (
+                          <SelectItem value="" disabled>
+                            <div className="flex items-center gap-2 text-muted-foreground">
                               <Building className="h-4 w-4" />
-                              <div>
-                                <p className="font-medium">{client.company || client.name}</p>
-                                <p className="text-xs text-muted-foreground">{client.email}</p>
-                              </div>
+                              <p>No clients available</p>
                             </div>
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={(value: any) => setFormData(prev => ({ ...prev, status: value }))}>
-                      <SelectTrigger className="rounded-xl">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -282,18 +318,20 @@ export default function Projects() {
                         employees.map((employee) => (
                           <div key={employee.id} className="flex items-center space-x-2">
                             <Checkbox
-                              id={employee.id}
-                              checked={selectedEmployees.includes(employee.id)}
+                              id={employee.id || employee.user_id}
+                              checked={selectedEmployees.includes(employee.id || employee.user_id)}
                               onCheckedChange={(checked) => {
+                                const empId = employee.id || employee.user_id;
+                                console.log('Employee toggle:', { empId, checked, currentSelected: selectedEmployees });
                                 if (checked) {
-                                  setSelectedEmployees([...selectedEmployees, employee.id]);
+                                  setSelectedEmployees([...selectedEmployees, empId]);
                                 } else {
-                                  setSelectedEmployees(selectedEmployees.filter(id => id !== employee.id));
+                                  setSelectedEmployees(selectedEmployees.filter(id => id !== empId));
                                 }
                               }}
                             />
                             <label
-                              htmlFor={employee.id}
+                              htmlFor={employee.id || employee.user_id}
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                             >
                               {employee.name} - {employee.department}
@@ -321,7 +359,7 @@ export default function Projects() {
                   >
                     {createLoading ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <Loader size="sm" />
                         Creating...
                       </>
                     ) : (
@@ -412,7 +450,7 @@ export default function Projects() {
                       className="text-xs"
                     >
                       {updatingProgress === project.id ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <Loader size="sm" />
                       ) : (
                         "Quick +10%"
                       )}
@@ -455,7 +493,7 @@ export default function Projects() {
                           className="px-2 py-1 h-7"
                         >
                           {updatingProgress === project.id ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
+                            <Loader size="sm" />
                           ) : (
                             <Save className="h-3 w-3" />
                           )}

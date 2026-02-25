@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Send, Search, ArrowLeft, Loader2, MessageSquare } from "lucide-react";
+import { Send, Search, ArrowLeft, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { messageService, Message } from "@/services/messageService";
 import { projectService, Project } from "@/services/projectService";
 import { toast } from "sonner";
+import Loader from "@/components/Loader";
 
 export default function Messages() {
   const { user } = useAuth();
@@ -109,7 +110,7 @@ export default function Messages() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader size="md" text="Loading messages..." />
       </div>
     );
   }
@@ -267,7 +268,7 @@ export default function Messages() {
                       disabled={sendingMessage || !newMessage.trim()}
                     >
                       {sendingMessage ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-white" />
+                        <Loader size="sm" />
                       ) : (
                         <Send className="h-4 w-4 text-white" />
                       )}

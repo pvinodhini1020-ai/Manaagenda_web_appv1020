@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
-import { Check, X, Loader2, Users } from "lucide-react";
+import { Check, X, Users, ArrowUpRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { serviceRequestService, ServiceRequest } from "@/services/serviceRequestService";
 import { userService, User } from "@/services/userService";
+import Loader from "@/components/Loader";
 
 // Local interface for employees with user_id field
 interface Employee {
@@ -39,6 +40,7 @@ export default function ServiceRequests() {
   const [loading, setLoading] = useState(true);
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -112,7 +114,7 @@ export default function ServiceRequests() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader size="md" text="Loading service requests..." />
       </div>
     );
   }
@@ -124,6 +126,16 @@ export default function ServiceRequests() {
       </div>
 
       <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
+        <div className="p-6 border-b border-border flex items-center justify-between">
+          <h2 className="font-bold text-foreground text-lg">Recent Service Requests</h2>
+          <button 
+            className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
+            onClick={() => setShowAll(!showAll)}
+          >
+            {showAll ? 'Show less' : 'View all'}
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -202,7 +214,7 @@ export default function ServiceRequests() {
                                   disabled={approvingRequestId === req.id || selectedEmployees.length === 0}
                                 >
                                   {approvingRequestId === req.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    <Loader size="sm" />
                                   ) : null}
                                   Approve & Create Project
                                 </Button>

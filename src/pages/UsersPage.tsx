@@ -1,9 +1,10 @@
-import { Search, Loader2 } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import StatusBadge from "@/components/StatusBadge";
 import { userService, User } from "@/services/userService";
 import { toast } from "sonner";
+import Loader from "@/components/Loader";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
@@ -31,8 +32,7 @@ export default function UsersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2 text-muted-foreground">Loading users...</span>
+        <Loader size="md" text="Loading users..." />
       </div>
     );
   }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,19 +8,33 @@ import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
 } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { serviceTypeService, ServiceType } from "@/services/serviceTypeService";
+import Loader from "@/components/Loader";
 
 export default function Services() {
   const [services, setServices] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [editingService, setEditingService] = useState<ServiceType | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState<ServiceType | null>(null);
   const [newService, setNewService] = useState({
     name: "",
     description: "",
     status: "active" as "active" | "inactive"
   });
+
+  const resetForm = () => {
+    setNewService({
+      name: "",
+      description: "",
+      status: "active"
+    });
+    setEditingService(null);
+  };
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -57,33 +71,66 @@ export default function Services() {
 
     setCreateLoading(true);
     try {
-      const createdService = await serviceTypeService.createServiceType({
-        name: newService.name.trim(),
-        description: newService.description.trim() || undefined,
-        status: newService.status
-      });
+      if (editingService) {
+        // Update existing service
+        const updatedService = await serviceTypeService.updateServiceType(editingService.id, {
+          name: newService.name.trim(),
+          description: newService.description.trim() || undefined,
+          status: newService.status
+        });
+        setServices(prev => prev.map(service => 
+          service.id === editingService.id ? updatedService : service
+        ));
+        toast.success("Service updated successfully!");
+      } else {
+        // Create new service
+        const createdService = await serviceTypeService.createServiceType({
+          name: newService.name.trim(),
+          description: newService.description.trim() || undefined,
+          status: newService.status
+        });
+        setServices(prev => [...prev, createdService]);
+        toast.success("Service created successfully!");
+      }
       
-      setServices(prev => [...prev, createdService]);
-      setNewService({ name: "", description: "", status: "active" });
+      resetForm();
       setDialogOpen(false);
-      toast.success("Service created successfully!");
     } catch (error: any) {
-      console.error("Error creating service:", error);
-      toast.error(error.message || "Failed to create service");
+      console.error("Error creating/updating service:", error);
+      toast.error(error.message || "Failed to create/update service");
     } finally {
       setCreateLoading(false);
     }
   };
 
-  const handleDeleteService = async (serviceId: string) => {
+  const handleEditService = (service: ServiceType) => {
+    setEditingService(service);
+    setNewService({
+      name: service.name,
+      description: service.description || "",
+      status: service.status
+    });
+    setDialogOpen(true);
+  };
+
+  const handleDeleteService = async () => {
+    if (!serviceToDelete) return;
+    
     try {
-      await serviceTypeService.deleteServiceType(serviceId);
-      setServices(prev => prev.filter(service => service.id !== serviceId));
+      await serviceTypeService.deleteServiceType(serviceToDelete.id);
+      setServices(prev => prev.filter(service => service.id !== serviceToDelete.id));
       toast.success("Service deleted successfully!");
+      setDeleteDialogOpen(false);
+      setServiceToDelete(null);
     } catch (error: any) {
       console.error("Error deleting service:", error);
       toast.error(error.message || "Failed to delete service");
     }
+  };
+
+  const openDeleteDialog = (service: ServiceType) => {
+    setServiceToDelete(service);
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -93,14 +140,19 @@ export default function Services() {
           <h1 className="text-3xl font-bold text-foreground">Services</h1>
           <p className="text-muted-foreground">Manage your service offerings</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) {
+            resetForm();
+          }
+        }}>
           <DialogTrigger asChild>
             <Button className="gradient-primary border-0 rounded-xl hover:opacity-90 transition-opacity text-white shadow-soft">
               <Plus className="h-4 w-4 mr-2" /> Add Service
             </Button>
           </DialogTrigger>
           <DialogContent className="rounded-2xl">
-            <DialogHeader><DialogTitle>Create Service</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{editingService ? 'Edit Service' : 'Create Service'}</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
                 <Label>Service Name</Label>
@@ -138,12 +190,12 @@ export default function Services() {
                 disabled={createLoading}
               >
                 {createLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Creating...
-                  </>
+                  <span>
+                    <Loader size="sm" />
+                    {editingService ? 'Updating...' : 'Creating...'}
+                  </span>
                 ) : (
-                  "Create Service"
+                  <span>{editingService ? 'Update Service' : 'Create Service'}</span>
                 )}
               </Button>
             </div>
@@ -153,8 +205,7 @@ export default function Services() {
 
       {loading ? (
         <div className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2 text-muted-foreground">Loading services...</span>
+          <Loader size="md" text="Loading services..." />
         </div>
       ) : services.length === 0 ? (
         <div className="text-center py-12">
@@ -178,12 +229,19 @@ export default function Services() {
                 </span>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="rounded-xl"><Pencil className="h-3 w-3 mr-1" /> Edit</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="rounded-xl"
+                  onClick={() => handleEditService(service)}
+                >
+                  <Pencil className="h-3 w-3 mr-1" /> Edit
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   className="text-destructive hover:bg-destructive/10 rounded-xl"
-                  onClick={() => handleDeleteService(service.id)}
+                  onClick={() => openDeleteDialog(service)}
                 >
                   <Trash2 className="h-3 w-3 mr-1" /> Delete
                 </Button>
@@ -192,6 +250,29 @@ export default function Services() {
           ))}
         </div>
       )}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete Service
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete service "{serviceToDelete?.name}"? 
+              This action cannot be undone and will permanently remove the service from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteService}
+              className="gradient-danger border-0 rounded-xl hover:opacity-90 transition-opacity text-white"
+            >
+              Delete Service
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

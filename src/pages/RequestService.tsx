@@ -5,10 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ClipboardList, Loader2 } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { serviceRequestService } from "@/services/serviceRequestService";
 import { serviceTypeService, ServiceType } from "@/services/serviceTypeService";
+import Loader from "@/components/Loader";
 
 export default function RequestService() {
   const { user } = useAuth();
@@ -168,7 +169,7 @@ export default function RequestService() {
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <Loader size="sm" />
                   Submitting...
                 </>
               ) : (

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Users, Building2, FolderKanban, FileText, TrendingUp, ArrowUpRight, Loader2 } from "lucide-react";
+import { Users, Building2, FolderKanban, FileText, TrendingUp, ArrowUpRight } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import StatusBadge from "@/components/StatusBadge";
+import Loader from "@/components/Loader";
 import { useAuth } from "@/contexts/AuthContext";
 import { userService } from "@/services/userService";
 import { projectService, Project } from "@/services/projectService";
@@ -12,6 +13,8 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,11 +23,19 @@ export default function AdminDashboard() {
       try {
         const dashboardStats = await userService.getDashboardStats();
         setStats(dashboardStats);
+        
         // Filter projects to show only in_progress, pending, and active status
-        const filteredProjects = (dashboardStats.projects || []).filter(
-          (project: Project) => ['in_progress', 'pending', 'active'].includes(project.status)
-        );
-        setProjects(filteredProjects);
+        const allProjects = dashboardStats.projects || [];
+        const newFilteredProjects = showAll 
+          ? allProjects 
+          : allProjects.filter((project: Project) => ['in_progress', 'pending', 'active'].includes(project.status));
+        
+        console.log('Projects before filter:', allProjects);
+        console.log('Show all:', showAll);
+        console.log('Filtered projects:', newFilteredProjects);
+        
+        setProjects(newFilteredProjects);
+        setFilteredProjects(newFilteredProjects);
       } catch (error: any) {
         console.error("Error fetching dashboard data:", error);
         toast.error(error.message || "Failed to load dashboard data");
@@ -34,12 +45,12 @@ export default function AdminDashboard() {
     };
     
     fetchData();
-  }, [user]);
+  }, [user, showAll, setShowAll]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader size="md" text="Loading dashboard..." />
       </div>
     );
   }
@@ -98,8 +109,12 @@ export default function AdminDashboard() {
       <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h2 className="font-bold text-foreground text-lg">Recent Projects</h2>
-          <button className="text-sm text-primary font-medium hover:underline flex items-center gap-1">
-            View all <ArrowUpRight className="h-3.5 w-3.5" />
+          <button 
+            className="text-sm text-primary font-medium hover:underline flex items-center gap-1"
+            onClick={() => setShowAll(!showAll)}
+          >
+            {showAll ? 'Show less' : 'View all'}
+            <ArrowUpRight className="h-3.5 w-3.5" />
           </button>
         </div>
         <div className="overflow-x-auto">
@@ -113,7 +128,7 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {projects.slice(0, 5).map((project) => (
+              {filteredProjects.slice(0, showAll ? undefined : 5).map((project) => (
                 <tr key={project.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="font-medium text-foreground">{project.name}</div>
@@ -133,13 +148,15 @@ export default function AdminDashboard() {
                   </td>
                 </tr>
               ))}
+              {projects.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center">
+                    <p className="text-muted-foreground">No projects found</p>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
-          {projects.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No projects found</p>
-            </div>
-          )}
         </div>
       </div>
     </div>
