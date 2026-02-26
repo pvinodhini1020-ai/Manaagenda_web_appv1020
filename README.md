@@ -34,3 +34,10 @@ npm test
 - User management
 - Real-time messaging
 - Profile management
+
+
+## Login Credentials
+
+- Admin: admin@vinodhini.com / password@123
+- Employee: employee@vinodhini.com / password@123
+- Client: client@vinodhini.com / password@123

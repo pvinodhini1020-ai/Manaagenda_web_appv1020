@@ -121,22 +121,111 @@ export default function Clients() {
       newErrors.address = "Address must be at least 10 characters";
     }
 
-    if (!formData.password.trim()) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    // Password validation - only required for new clients
+    if (!editingClient) {
+      if (!formData.password.trim()) {
+        newErrors.password = "Password is required";
+      } else if (formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      }
+    } else {
+      // For editing clients, only validate if password is provided and not placeholder
+      if (formData.password.trim() && formData.password !== "••••••••" && formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+  const handleInputChange = (
+    field: keyof FormData,
+    value: string | boolean
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    let errorMessage: string | undefined;
+
+    // Validation rules
+    if (typeof value === "string") {
+      const trimmedValue = value.trim();
+      if (field === "name") {
+        if (!trimmedValue) {
+          errorMessage = "Contact person name is required";
+        } else if (trimmedValue.length < 3) {
+          errorMessage = "Name must be at least 3 characters";
+        }
+      }
+      // 🔹 Phone validation
+      if (field === "phone") {
+        const phoneRegex = /^[0-9+\-\s()]{10}$/;
+
+        if (!trimmedValue) {
+          errorMessage = "Phone number is required";
+        } else if (!phoneRegex.test(trimmedValue)) {
+          errorMessage = "Enter a valid phone number";
+        }
+      }
+
+      // Email validation
+      if (field === "email") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!trimmedValue) {
+          errorMessage = "Email is required";
+        } else if (!emailRegex.test(value)) {
+          errorMessage = "Enter a valid email address";
+        }
+      }
+      // 🔹 Company validation
+      if (field === "company") {
+        const trimmedValue = value.trim();
+
+        if (!trimmedValue) {
+          errorMessage = "Company name is required";
+        } else if (trimmedValue.length < 2) {
+          errorMessage = "Company name must be at least 2 characters";
+        }
+      }
+
+      // 🔹 Address validation
+      if (field === "address") {
+        const trimmedValue = value.trim();
+
+        if (!trimmedValue) {
+          errorMessage = "Address is required";
+        } else if (trimmedValue.length < 10) {
+          errorMessage = "Address must be at least 10 characters";
+        }
+      }
+
+      if (field === "password") {
+        const trimmedValue = value.trim();
+
+        // If NOT editing → password required
+        if (!editingClient) {
+          if (!trimmedValue) {
+            errorMessage = "Password is required";
+          } else if (trimmedValue.length < 6) {
+            errorMessage = "Password must be at least 6 characters";
+          }
+        }
+
+        // If editing → only validate when user types something new (not placeholder)
+        if (editingClient && trimmedValue !== "••••••••" && trimmedValue.length > 0) {
+          if (trimmedValue.length < 6) {
+            errorMessage = "Password must be at least 6 characters";
+          }
+        }
+      }
     }
+
+
+    setErrors((prev) => ({
+      ...prev,
+      [field]: errorMessage,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -159,8 +248,8 @@ export default function Clients() {
         status: formData.status ? "active" : "inactive",
       };
 
-      // Only include password if it's provided (not empty)
-      if (formData.password.trim()) {
+      // Only include password if it's provided and not the placeholder
+      if (formData.password.trim() && formData.password !== "••••••••") {
         payload.password = formData.password;
       }
 
@@ -223,6 +312,7 @@ export default function Clients() {
       status: true,
     });
     setErrors({});
+    setEditingClient(null);
     setDialogOpen(false);
   };
 
@@ -238,9 +328,11 @@ export default function Clients() {
       phone: client.phone || "",
       company: client.company || "",
       address: client.address || "",
-      password: "",
+      password: "••••••••", // Placeholder to indicate existing password
       status: client.status === "active",
     });
+    // Clear password errors when editing
+    setErrors(prev => ({ ...prev, password: undefined }));
     setDialogOpen(true);
   };
 
@@ -285,7 +377,7 @@ export default function Clients() {
             >
               View All Clients
             </Button>
-            
+
             <Dialog open={dialogOpen} onOpenChange={(open) => {
               setDialogOpen(open);
               if (!open) {
@@ -514,7 +606,7 @@ export default function Clients() {
             <h2 className="text-lg font-semibold text-foreground">Recent Clients</h2>
             <p className="text-sm text-muted-foreground">Latest client registrations</p>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>

@@ -11,6 +11,7 @@ import {
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { serviceTypeService, ServiceType } from "@/services/serviceTypeService";
+import { FormErrors } from "@/utils/validation";
 import Loader from "@/components/Loader";
 
 export default function Services() {
@@ -21,6 +22,11 @@ export default function Services() {
   const [editingService, setEditingService] = useState<ServiceType | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<ServiceType | null>(null);
+  const [errors, setErrors] = useState<FormErrors>({
+    name: "",
+    description: "",
+    status: ""
+  });
   const [newService, setNewService] = useState({
     name: "",
     description: "",
@@ -55,7 +61,7 @@ export default function Services() {
   const getGradientForService = (index: number): string => {
     const gradients = [
       "gradient-primary",
-      "gradient-info", 
+      "gradient-info",
       "gradient-purple",
       "gradient-success",
       "gradient-warning"
@@ -78,7 +84,7 @@ export default function Services() {
           description: newService.description.trim() || undefined,
           status: newService.status
         });
-        setServices(prev => prev.map(service => 
+        setServices(prev => prev.map(service =>
           service.id === editingService.id ? updatedService : service
         ));
         toast.success("Service updated successfully!");
@@ -92,7 +98,7 @@ export default function Services() {
         setServices(prev => [...prev, createdService]);
         toast.success("Service created successfully!");
       }
-      
+
       resetForm();
       setDialogOpen(false);
     } catch (error: any) {
@@ -115,7 +121,7 @@ export default function Services() {
 
   const handleDeleteService = async () => {
     if (!serviceToDelete) return;
-    
+
     try {
       await serviceTypeService.deleteServiceType(serviceToDelete.id);
       setServices(prev => prev.filter(service => service.id !== serviceToDelete.id));
@@ -131,6 +137,13 @@ export default function Services() {
   const openDeleteDialog = (service: ServiceType) => {
     setServiceToDelete(service);
     setDeleteDialogOpen(true);
+  };
+
+  const validateServiceName = (value) => {
+    if (!value.trim()) {
+      return "Service Name is required";
+    }
+    return "";
   };
 
   return (
@@ -155,18 +168,39 @@ export default function Services() {
             <DialogHeader><DialogTitle>{editingService ? 'Edit Service' : 'Create Service'}</DialogTitle></DialogHeader>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label>Service Name</Label>
-                <Input 
-                  placeholder="Enter service name" 
-                  className="rounded-xl"
+                <Label>
+                  Service Name <span className="text-red-500">*</span>
+                </Label>
+
+                <Input
+                  placeholder="Enter service name"
+                  className={`rounded-xl border-2 ${errors.name ? "border-red-500 focus:border-red-500" : "border-border"
+                    }`}
                   value={newService.name}
-                  onChange={(e) => setNewService(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    // Update value
+                    setNewService((prev) => ({ ...prev, name: value }));
+
+                    // 🔥 Call separate validation method
+                    const errorMessage = validateServiceName(value);
+
+                    setErrors((prev) => ({
+                      ...prev,
+                      name: errorMessage,
+                    }));
+                  }}
                 />
+
+                {errors.name && (
+                  <p className="text-red-500 text-sm">{errors.name}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
-                <Textarea 
-                  placeholder="Describe the service" 
+                <Textarea
+                  placeholder="Describe the service"
                   className="rounded-xl"
                   value={newService.description}
                   onChange={(e) => setNewService(prev => ({ ...prev, description: e.target.value }))}
@@ -184,8 +218,8 @@ export default function Services() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button 
-                className="w-full gradient-primary border-0 rounded-xl hover:opacity-90 transition-opacity text-white" 
+              <Button
+                className="w-full gradient-primary border-0 rounded-xl hover:opacity-90 transition-opacity text-white"
                 onClick={handleCreateService}
                 disabled={createLoading}
               >
@@ -220,26 +254,25 @@ export default function Services() {
               <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-sm font-medium text-muted-foreground">Status:</span>
-                <span className={`text-sm px-2 py-1 rounded-full ${
-                  service.status === 'active' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-gray-100 text-gray-800'
-                }`}>
+                <span className={`text-sm px-2 py-1 rounded-full ${service.status === 'active'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-gray-100 text-gray-800'
+                  }`}>
                   {service.status}
                 </span>
               </div>
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="rounded-xl"
                   onClick={() => handleEditService(service)}
                 >
                   <Pencil className="h-3 w-3 mr-1" /> Edit
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="text-destructive hover:bg-destructive/10 rounded-xl"
                   onClick={() => openDeleteDialog(service)}
                 >
@@ -258,13 +291,13 @@ export default function Services() {
               Delete Service
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete service "{serviceToDelete?.name}"? 
+              Are you sure you want to delete service "{serviceToDelete?.name}"?
               This action cannot be undone and will permanently remove the service from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDeleteService}
               className="gradient-danger border-0 rounded-xl hover:opacity-90 transition-opacity text-white"
             >

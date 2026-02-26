@@ -14,6 +14,7 @@ interface User {
   address?: string;
   department?: string;
   salary?: number;
+  status?: string;
 }
 
 interface AuthContextType {
@@ -60,7 +61,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(response.user);
     } catch (error: any) {
       const errorMessage = error.message || 'Login failed. Please try again.';
-      setError(errorMessage);
+      
+      // Check for inactive user error
+      if (errorMessage.toLowerCase().includes('inactive') || errorMessage.toLowerCase().includes('activate your account')) {
+        setError('Your account is inactive. Please contact your system administrator to activate your account.');
+      } else {
+        setError(errorMessage);
+      }
+      
       throw error;
     } finally {
       setIsLoading(false);

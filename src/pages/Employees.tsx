@@ -86,6 +86,34 @@ export default function Employees() {
     e.role.toLowerCase().includes(search.toLowerCase())
   );
 
+  const formatSalary = (value: string | number) => {
+    if (!value) return "";
+    return Number(value).toLocaleString("en-IN"); // Indian format
+  };
+
+  const handleSalaryChange = (value: string) => {
+    // Remove commas
+    const numericValue = value.replace(/,/g, "");
+
+    // Allow only numbers
+    if (!/^\d*$/.test(numericValue)) return;
+
+    setFormData(prev => ({
+      ...prev,
+      salary: numericValue,
+    }));
+    setErrors(prev => {
+      let errorMessage: string | undefined;
+
+      if (!numericValue) {
+        errorMessage = "Salary is required";
+      } else if (Number(numericValue) < 1000) {
+        errorMessage = "Salary must be greater than 1000";
+      }
+
+      return { ...prev, salary: errorMessage };
+    });
+  };
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -129,10 +157,44 @@ export default function Employees() {
 
   const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
-    }
+
+    setErrors(prev => {
+      let errorMessage: string | undefined;
+      if (field === "password" && typeof value === "string") {
+        if (!editingEmployee && !value.trim()) {
+          // Creating new employee → password required
+          errorMessage = "Password is required";
+        } else if (value && value.length < 6) {
+          errorMessage = "Password must be at least 6 characters";
+        }
+      }
+      if (field === "department" && typeof value === "string") {
+        if (!value.trim()) {
+          errorMessage = "Department is required";
+        }
+      }
+      if (field === "email" && typeof value === "string") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!value.trim()) {
+          errorMessage = "Email is required";
+        } else if (!emailRegex.test(value)) {
+          errorMessage = "Invalid email address";
+        }
+      }
+
+      if (field === "phone" && typeof value === "string") {
+        const phoneRegex = /^\+?[0-9\s\-()]{10}$/;
+
+        if (!value.trim()) {
+          errorMessage = "Phone number is required";
+        } else if (!phoneRegex.test(value)) {
+          errorMessage = "Invalid phone number";
+        }
+      }
+
+      return { ...prev, [field]: errorMessage };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -403,11 +465,13 @@ export default function Employees() {
                     </Label>
                     <Input
                       id="salary"
-                      type="number"
-                      placeholder="75000"
-                      value={formData.salary}
-                      onChange={(e) => handleInputChange("salary", e.target.value)}
-                      className={`rounded-xl border-2 transition-all duration-200 focus:border-primary/50 ${errors.salary ? "border-destructive focus:border-destructive" : "border-border"
+                      type="text"
+                      placeholder="75,000"
+                      value={formatSalary(formData.salary)}
+                      onChange={(e) => handleSalaryChange(e.target.value)}
+                      className={`rounded-xl border-2 transition-all duration-200 focus:border-primary/50 ${errors.salary
+                        ? "border-destructive focus:border-destructive"
+                        : "border-border"
                         }`}
                       disabled={loading}
                     />

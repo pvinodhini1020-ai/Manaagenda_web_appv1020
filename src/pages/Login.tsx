@@ -140,10 +140,27 @@ export default function Login() {
 
           {/* Error message */}
           {error && !showSuccess && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 animate-slide-up">
+            <div className={`mb-6 p-4 rounded-xl border animate-slide-up ${
+              error.toLowerCase().includes('inactive') 
+                ? 'bg-orange-50 border-orange-200' 
+                : 'bg-red-50 border-red-200'
+            }`}>
               <div className="flex items-center space-x-3">
-                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-                <p className="text-sm text-red-800">{error}</p>
+                <AlertCircle className={`h-5 w-5 flex-shrink-0 ${
+                  error.toLowerCase().includes('inactive') ? 'text-orange-600' : 'text-red-600'
+                }`} />
+                <div>
+                  <p className={`text-sm font-medium ${
+                    error.toLowerCase().includes('inactive') ? 'text-orange-800' : 'text-red-800'
+                  }`}>
+                    {error}
+                  </p>
+                  {error.toLowerCase().includes('inactive') && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      Please reach out to your system administrator to reactivate your account.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
