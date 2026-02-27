@@ -20,7 +20,7 @@ export const useServiceRequestNotifications = () => {
 
     try {
       const currentRequests = await serviceRequestService.getClientServiceRequests(user.id);
-      const { previousRequests } = notificationState;
+      const previousRequests = notificationState.previousRequests;
 
       // Check for status changes
       let newNotificationsCount = 0;

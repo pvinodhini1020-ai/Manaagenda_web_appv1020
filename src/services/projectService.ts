@@ -67,9 +67,10 @@ export const projectService = {
     try {
       const response = await apiClient.get('/projects', { params });
       return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to projects');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to projects');
       }
       throw error;
     }
@@ -80,9 +81,10 @@ export const projectService = {
     try {
       const response = await apiClient.get(`/projects/${id}`);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to this project');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to this project');
       }
       throw error;
     }
@@ -93,9 +95,10 @@ export const projectService = {
     try {
       const response = await apiClient.post('/projects', project);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied: Only admins can create projects');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied: Only admins can create projects');
       }
       throw error;
     }
@@ -106,9 +109,10 @@ export const projectService = {
     try {
       const response = await apiClient.put(`/projects/${id}`, project);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to update this project');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to update this project');
       }
       throw error;
     }
@@ -118,9 +122,10 @@ export const projectService = {
   deleteProject: async (id: string): Promise<void> => {
     try {
       await apiClient.delete(`/projects/${id}`);
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied: Only admins can delete projects');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied: Only admins can delete projects');
       }
       throw error;
     }
@@ -130,9 +135,10 @@ export const projectService = {
   assignEmployees: async (id: string, employees: AssignEmployeesRequest): Promise<void> => {
     try {
       await apiClient.post(`/projects/${id}/assign`, employees);
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied: Only admins can assign employees');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied: Only admins can assign employees');
       }
       throw error;
     }
@@ -143,9 +149,10 @@ export const projectService = {
     try {
       const response = await apiClient.get(`/projects?client_id=${clientId}`);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to client projects');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to client projects');
       }
       throw error;
     }
@@ -156,9 +163,10 @@ export const projectService = {
     try {
       const response = await apiClient.patch(`/projects/${id}/progress`, { progress });
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to update project progress');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to update project progress');
       }
       throw error;
     }

@@ -55,10 +55,11 @@ export default function Employees() {
       setFetchLoading(true);
       const response = await apiClient.get('/employees');
       setEmployees(response.data.data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching employees:", error);
+      const errorMessage = error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'data' in error.response && typeof error.response.data === 'object' && error.response.data && 'error' in error.response.data ? String(error.response.data.error) : "Please try again later.";
       toast.error("Failed to fetch employees", {
-        description: error.response?.data?.error || "Please try again later.",
+        description: errorMessage,
         icon: <X className="h-4 w-4" />,
       });
     } finally {
@@ -131,7 +132,7 @@ export default function Employees() {
 
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[\d\s\-\(\)]{10}$/.test(formData.phone.replace(/\s/g, ""))) {
+    } else if (!/^\+?[\d\s\-()]{10,}$/.test(formData.phone.replace(/\s/g, ""))) {
       newErrors.phone = "Please enter a valid 10-digit phone number";
     }
 
@@ -207,7 +208,7 @@ export default function Employees() {
     setLoading(true);
 
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         name: formData.fullName,
         email: formData.email,
         salary: Number(formData.salary),
@@ -265,10 +266,11 @@ export default function Employees() {
       setEditingEmployee(null);
       setDialogOpen(false);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving employee:", error);
+      const errorMessage = error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'data' in error.response && typeof error.response.data === 'object' && error.response.data && 'message' in error.response.data ? String(error.response.data.message) : "Please try again later.";
       toast.error(`Failed to ${editingEmployee ? 'update' : 'add'} employee`, {
-        description: error.response?.data?.message || "Please try again later.",
+        description: errorMessage,
         icon: <X className="h-4 w-4" />,
       });
     } finally {
@@ -317,9 +319,10 @@ export default function Employees() {
         // Refresh the employees list
         fetchEmployees();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting employee:", error);
-      toast.error(error.response?.data?.message || "Failed to delete employee");
+      const errorMessage = error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'data' in error.response && typeof error.response.data === 'object' && error.response.data && 'message' in error.response.data ? String(error.response.data.message) : "Failed to delete employee";
+      toast.error(errorMessage);
     }
   };
 

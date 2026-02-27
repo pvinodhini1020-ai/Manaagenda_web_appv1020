@@ -47,9 +47,10 @@ export default function Services() {
       try {
         const serviceTypes = await serviceTypeService.getServiceTypes();
         setServices(serviceTypes || []);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error fetching services:", error);
-        toast.error(error.message || "Failed to load services");
+        const errorMessage = error instanceof Error ? error.message : "Failed to load services";
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -101,9 +102,10 @@ export default function Services() {
 
       resetForm();
       setDialogOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating/updating service:", error);
-      toast.error(error.message || "Failed to create/update service");
+      const errorMessage = error instanceof Error ? error.message : "Failed to create/update service";
+      toast.error(errorMessage);
     } finally {
       setCreateLoading(false);
     }
@@ -128,9 +130,10 @@ export default function Services() {
       toast.success("Service deleted successfully!");
       setDeleteDialogOpen(false);
       setServiceToDelete(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting service:", error);
-      toast.error(error.message || "Failed to delete service");
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete service";
+      toast.error(errorMessage);
     }
   };
 

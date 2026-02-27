@@ -8,9 +8,19 @@ import { userService } from "@/services/userService";
 import { projectService, Project } from "@/services/projectService";
 import { toast } from "sonner";
 
+interface DashboardStats {
+  total_users: number;
+  employee_users: number;
+  client_users: number;
+  admin_users: number;
+  active_projects: number;
+  pending_projects: number;
+  projects: Project[];
+}
+
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -38,13 +48,13 @@ export default function AdminDashboard() {
         if (newFilteredProjects.length > 0) {
           console.log('First project data:', newFilteredProjects[0]);
         }
-        debugger
         
         setProjects(newFilteredProjects);
         setFilteredProjects(newFilteredProjects);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error fetching dashboard data:", error);
-        toast.error(error.message || "Failed to load dashboard data");
+        const errorMessage = error instanceof Error ? error.message : "Failed to load dashboard data";
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }

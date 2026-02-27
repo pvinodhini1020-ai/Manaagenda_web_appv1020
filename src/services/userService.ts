@@ -50,9 +50,10 @@ export const userService = {
     try {
       const response = await apiClient.get('/users', { params });
       return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to user list');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to user list');
       }
       throw error;
     }
@@ -63,9 +64,10 @@ export const userService = {
     try {
       const response = await apiClient.get(`/users/${id}`);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to this user profile');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to this user profile');
       }
       throw error;
     }
@@ -76,9 +78,10 @@ export const userService = {
     try {
       const response = await apiClient.put(`/users/${id}`, user);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to update this profile');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to update this profile');
       }
       throw error;
     }
@@ -89,9 +92,10 @@ export const userService = {
     try {
       const response = await apiClient.patch(`/users/${id}`, user);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to update this profile');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to update this profile');
       }
       throw error;
     }
@@ -101,9 +105,10 @@ export const userService = {
   deleteUser: async (id: string): Promise<void> => {
     try {
       await apiClient.delete(`/users/${id}`);
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied: Only admins can delete users');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied: Only admins can delete users');
       }
       throw error;
     }
@@ -114,9 +119,10 @@ export const userService = {
     try {
       const response = await apiClient.get('/users/me');
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to user profile');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to user profile');
       }
       throw error;
     }
@@ -127,22 +133,24 @@ export const userService = {
     try {
       const response = await apiClient.put('/users/me', user);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to update profile');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to update profile');
       }
       throw error;
     }
   },
 
   // Get dashboard statistics
-  getDashboardStats: async (): Promise<any> => {
+  getDashboardStats: async (): Promise<Record<string, unknown>> => {
     try {
       const response = await apiClient.get('/users/dashboard/stats');
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to dashboard statistics');
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 403) {
+        const errorData = error.response as { data?: { message?: string } };
+        throw new Error(errorData.data?.message || 'Access denied to dashboard statistics');
       }
       throw error;
     }

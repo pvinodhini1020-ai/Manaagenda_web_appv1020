@@ -31,9 +31,10 @@ export default function RequestService() {
       try {
         const types = await serviceTypeService.getActiveServiceTypes();
         setServiceTypes(types || []);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error fetching service types:", error);
-        toast.error(error.message || "Failed to load service types");
+        const errorMessage = error instanceof Error ? error.message : "Failed to load service types";
+        toast.error(errorMessage);
       } finally {
         setLoadingServiceTypes(false);
       }
@@ -77,9 +78,10 @@ export default function RequestService() {
       setTitle("");
       setDescription("");
       setServiceType("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error submitting service request:", error);
-      toast.error(error.message || "Failed to submit service request");
+      const errorMessage = error instanceof Error ? error.message : "Failed to submit service request";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

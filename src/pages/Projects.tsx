@@ -122,8 +122,9 @@ export default function Projects() {
       // Refresh projects list
       const response = await projectService.getProjects();
       setProjects(response.data || []);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to create project");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to create project";
+      toast.error(errorMessage);
     } finally {
       setCreateLoading(false);
     }
@@ -163,8 +164,9 @@ export default function Projects() {
       
       // Update the progress values state
       setProgressValues(prev => ({ ...prev, [projectId]: newProgress }));
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update project progress");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update project progress";
+      toast.error(errorMessage);
     } finally {
       setUpdatingProgress(null);
     }
@@ -172,7 +174,7 @@ export default function Projects() {
 
   const handleStatusChange = async (projectId: string, newStatus: string) => {
     try {
-      await projectService.updateProject(projectId, { status: newStatus as any });
+      await projectService.updateProject(projectId, { status: newStatus });
       
       // If status is changed to completed, automatically set progress to 100%
       if (newStatus === 'completed') {
@@ -188,13 +190,14 @@ export default function Projects() {
         project.id === projectId 
           ? { 
               ...project, 
-              status: newStatus as any,
+              status: newStatus,
               progress: newStatus === 'completed' ? 100 : project.progress
             }
           : project
       ));
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update project status");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update project status";
+      toast.error(errorMessage);
     }
   };
 

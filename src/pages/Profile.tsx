@@ -55,11 +55,11 @@ export default function Profile() {
     }
 
     console.log('Current user:', user); // Debug log
-    console.log('User ID:', user.id, (user as any).user_id); // Debug log
+    console.log('User ID:', user.id, (user as Record<string, unknown>).user_id); // Debug log
     
     setLoading(true);
     try {
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
       
       // Only include fields that have changed and are allowed for the user's role
       Object.keys(profileData).forEach(key => {
@@ -85,7 +85,7 @@ export default function Profile() {
         return;
       }
 
-      const userId = user.id || (user as any).user_id;
+      const userId = user.id || (user as Record<string, unknown>).user_id as string;
       console.log('Updating user with ID:', userId); // Debug log
       console.log('Update data:', updateData); // Debug log
 
@@ -99,9 +99,10 @@ export default function Profile() {
       if (updateData.email) {
         toast.info("Email updated. You may need to login again.");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Update error:', error);
-      toast.error(error.message || "Failed to update profile");
+      const errorMessage = error instanceof Error ? error.message : "Failed to update profile";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

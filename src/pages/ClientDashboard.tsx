@@ -11,9 +11,14 @@ import { messageService, Message } from "@/services/messageService";
 import { useServiceRequestNotifications } from "@/hooks/useServiceRequestNotifications";
 import { toast } from "sonner";
 
+interface DashboardStats {
+  total_projects: number;
+  projects: Project[];
+}
+
 export default function ClientDashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -41,9 +46,10 @@ export default function ClientDashboard() {
         setProjects(filteredProjects);
         setRequests(requestsRes || []);
         setMessages(messagesRes.data || []);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error fetching data:", error);
-        toast.error(error.message || "Failed to load dashboard data");
+        const errorMessage = error instanceof Error ? error.message : "Failed to load dashboard data";
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -180,7 +186,7 @@ export default function ClientDashboard() {
                   <div className="mt-3 p-3 bg-muted/30 rounded-lg">
                     <p className="text-sm font-medium text-foreground mb-1">Related Project</p>
                     <p className="text-sm text-muted-foreground">{request.project.name}</p>
-                    <StatusBadge status={request.project.status as any} />
+                    <StatusBadge status={request.project.status} />
                   </div>
                 )}
                 {request.status === 'approved' && request.project && (

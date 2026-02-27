@@ -50,7 +50,6 @@ export default function ServiceRequests() {
           userService.getUsers({ role: 'employee' })
         ]);
         setRequests(requestsRes.data || []);
-        debugger
         // Map User objects to Employee objects (id -> user_id)
         const mappedEmployees = (employeesRes.data || []).map(user => ({
           ...user,
@@ -83,8 +82,9 @@ export default function ServiceRequests() {
       const requestsRes = await serviceRequestService.getServiceRequests();
       setRequests(requestsRes.data || []);
       setSelectedEmployees([]);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to approve request");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to approve request";
+      toast.error(errorMessage);
     } finally {
       setApprovingRequestId(null);
     }
@@ -98,8 +98,9 @@ export default function ServiceRequests() {
       // Refresh the requests list
       const requestsRes = await serviceRequestService.getServiceRequests();
       setRequests(requestsRes.data || []);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to reject request");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to reject request";
+      toast.error(errorMessage);
     }
   };
 

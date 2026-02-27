@@ -81,8 +81,8 @@ export const authService = {
       } else {
         throw new Error(response.data.message || 'Login failed');
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || error.message || 'Login failed';
+    } catch (error: unknown) {
+      const message = error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'data' in error.response && typeof error.response.data === 'object' && error.response.data && 'message' in error.response.data ? String(error.response.data.message) : error instanceof Error ? error.message : 'Login failed';
       throw new Error(message);
     }
   },
@@ -100,8 +100,8 @@ export const authService = {
       } else {
         throw new Error(response.data.message || 'Registration failed');
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || error.message || 'Registration failed';
+    } catch (error: unknown) {
+      const message = error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'data' in error.response && typeof error.response.data === 'object' && error.response.data && 'message' in error.response.data ? String(error.response.data.message) : error instanceof Error ? error.message : 'Registration failed';
       throw new Error(message);
     }
   },

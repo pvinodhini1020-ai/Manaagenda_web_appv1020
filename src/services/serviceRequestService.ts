@@ -79,15 +79,18 @@ export const serviceRequestService = {
       } else {
         throw new Error('Invalid response from server');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating service request:', error);
-      if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
-      } else if (error.message) {
-        throw error;
-      } else {
-        throw new Error('Failed to create service request');
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          throw new Error(axiosError.response.data.message);
+        }
       }
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to create service request');
     }
   },
 
@@ -103,7 +106,7 @@ export const serviceRequestService = {
   },
 
   // Approve service request and create project (admin only)
-  approveServiceRequest: async (id: string, request: ApproveServiceRequestRequest): Promise<any> => {
+  approveServiceRequest: async (id: string, request: ApproveServiceRequestRequest): Promise<ServiceRequest> => {
     const response = await apiClient.post(`/service-requests/${id}/approve`, request);
     return response.data.data;
   },

@@ -78,8 +78,9 @@ export default function Messages() {
       setMessages(prev => [...prev, messageData]);
       setNewMessage("");
       toast.success("Message sent successfully");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to send message");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to send message";
+      toast.error(errorMessage);
     } finally {
       setSendingMessage(false);
     }

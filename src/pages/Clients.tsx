@@ -58,10 +58,11 @@ export default function Clients() {
       setFetchLoading(true);
       const response = await apiClient.get('/clients');
       setClients(response.data.data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching clients:", error);
+      const errorMessage = error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'data' in error.response && typeof error.response.data === 'object' && error.response.data && 'error' in error.response.data ? String(error.response.data.error) : "Please try again later.";
       toast.error("Failed to fetch clients", {
-        description: error.response?.data?.error || "Please try again later.",
+        description: errorMessage,
         icon: <X className="h-4 w-4" />,
       });
     } finally {
@@ -107,7 +108,7 @@ export default function Clients() {
 
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[\d\s\-\(\)]{10,}$/.test(formData.phone.replace(/\s/g, ""))) {
+    } else if (!/^\+?[\d\s\-()]{10,}$/.test(formData.phone.replace(/\s/g, ""))) {
       newErrors.phone = "Please enter a valid phone number";
     }
 
@@ -238,7 +239,7 @@ export default function Clients() {
     setLoading(true);
 
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -290,10 +291,11 @@ export default function Clients() {
       // Refresh clients list
       await fetchClients();
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving client:", error);
+      const errorMessage = error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'data' in error.response && typeof error.response.data === 'object' && error.response.data && 'message' in error.response.data ? String(error.response.data.message) : "Please try again later.";
       toast.error(`Failed to ${editingClient ? 'update' : 'add'} client`, {
-        description: error.response?.data?.message || "Please try again later.",
+        description: errorMessage,
         icon: <X className="h-4 w-4" />,
       });
     } finally {
@@ -348,10 +350,11 @@ export default function Clients() {
         icon: <CheckCircle className="h-4 w-4" />,
       });
       await fetchClients();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting client:", error);
+      const errorMessage = error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'data' in error.response && typeof error.response.data === 'object' && error.response.data && 'message' in error.response.data ? String(error.response.data.message) : "Please try again later.";
       toast.error("Failed to delete client", {
-        description: error.response?.data?.message || "Please try again later.",
+        description: errorMessage,
         icon: <X className="h-4 w-4" />,
       });
     }

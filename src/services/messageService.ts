@@ -44,9 +44,12 @@ export const messageService = {
     try {
       const response = await apiClient.get('/messages', { params });
       return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to messages');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+        if (axiosError.response?.status === 403) {
+          throw new Error(axiosError.response.data?.message || 'Access denied to messages');
+        }
       }
       throw error;
     }
@@ -57,9 +60,12 @@ export const messageService = {
     try {
       const response = await apiClient.get(`/messages/${id}`);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to this message');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+        if (axiosError.response?.status === 403) {
+          throw new Error(axiosError.response.data?.message || 'Access denied to this message');
+        }
       }
       throw error;
     }
@@ -70,9 +76,12 @@ export const messageService = {
     try {
       const response = await apiClient.post('/messages', message);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to send messages');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+        if (axiosError.response?.status === 403) {
+          throw new Error(axiosError.response.data?.message || 'Access denied to send messages');
+        }
       }
       throw error;
     }
@@ -82,9 +91,12 @@ export const messageService = {
   deleteMessage: async (id: string): Promise<void> => {
     try {
       await apiClient.delete(`/messages/${id}`);
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to delete this message');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+        if (axiosError.response?.status === 403) {
+          throw new Error(axiosError.response.data?.message || 'Access denied to delete this message');
+        }
       }
       throw error;
     }
@@ -95,9 +107,12 @@ export const messageService = {
     try {
       const response = await apiClient.get(`/projects/${projectId}/messages`);
       return response.data.data;
-    } catch (error: any) {
-      if (error.response?.status === 403) {
-        throw new Error(error.response.data.message || 'Access denied to project messages');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { message?: string } } };
+        if (axiosError.response?.status === 403) {
+          throw new Error(axiosError.response.data?.message || 'Access denied to project messages');
+        }
       }
       throw error;
     }

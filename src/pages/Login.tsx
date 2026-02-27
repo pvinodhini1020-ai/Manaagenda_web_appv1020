@@ -140,19 +140,16 @@ export default function Login() {
 
           {/* Error message */}
           {error && !showSuccess && (
-            <div className={`mb-6 p-4 rounded-xl border animate-slide-up ${
-              error.toLowerCase().includes('inactive') 
-                ? 'bg-orange-50 border-orange-200' 
+            <div className={`mb-6 p-4 rounded-xl border animate-slide-up ${error.toLowerCase().includes('inactive')
+                ? 'bg-orange-50 border-orange-200'
                 : 'bg-red-50 border-red-200'
-            }`}>
+              }`}>
               <div className="flex items-center space-x-3">
-                <AlertCircle className={`h-5 w-5 flex-shrink-0 ${
-                  error.toLowerCase().includes('inactive') ? 'text-orange-600' : 'text-red-600'
-                }`} />
+                <AlertCircle className={`h-5 w-5 flex-shrink-0 ${error.toLowerCase().includes('inactive') ? 'text-orange-600' : 'text-red-600'
+                  }`} />
                 <div>
-                  <p className={`text-sm font-medium ${
-                    error.toLowerCase().includes('inactive') ? 'text-orange-800' : 'text-red-800'
-                  }`}>
+                  <p className={`text-sm font-medium ${error.toLowerCase().includes('inactive') ? 'text-orange-800' : 'text-red-800'
+                    }`}>
                     {error}
                   </p>
                   {error.toLowerCase().includes('inactive') && (
@@ -177,8 +174,8 @@ export default function Login() {
                 value={formData.email}
                 onChange={handleInputChange}
                 className={`h-12 rounded-xl transition-all duration-200 ${formErrors.email
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
-                    : 'focus:border-primary focus:ring-primary/20'
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
+                  : 'focus:border-primary focus:ring-primary/20'
                   }`}
                 disabled={isSubmitting || isLoading}
                 autoComplete="email"
@@ -203,8 +200,8 @@ export default function Login() {
                   value={formData.password}
                   onChange={handleInputChange}
                   className={`h-12 rounded-xl pr-12 transition-all duration-200 ${formErrors.password
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
-                      : 'focus:border-primary focus:ring-primary/20'
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
+                    : 'focus:border-primary focus:ring-primary/20'
                     }`}
                   disabled={isSubmitting || isLoading}
                   autoComplete="current-password"
@@ -257,7 +254,7 @@ export default function Login() {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-xs text-muted-foreground">
-            © 2024 Vinodhini Software Solutions. All rights reserved.
+            © 2026 Vinodhini Software Solutions. All rights reserved.
           </p>
         </div>
       </div>
